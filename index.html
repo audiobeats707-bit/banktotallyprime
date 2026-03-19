@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BankToTallyPrime — Bank Statement Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1a2744;
+  --navy-light: #243358;
+  --gold: #e8a020;
+  --gold-light: #f5b840;
+  --green: #1a7a4a;
+  --green-light: #22a060;
+  --cream: #faf8f3;
+  --white: #ffffff;
+  --gray: #6b7280;
+  --gray-light: #f3f4f6;
+  --border: #e5e7eb;
+  --shadow: 0 4px 24px rgba(26,39,68,0.10);
+  --shadow-lg: 0 12px 48px rgba(26,39,68,0.16);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--navy);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(26,39,68,0.97);
+  backdrop-filter: blur(12px);
+  padding: 0 5%;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(232,160,32,0.2);
+}
+
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1.25rem;
+  color: var(--white);
+  letter-spacing: -0.5px;
+}
+
+.nav-logo span { color: var(--gold); }
+
+.nav-links {
+  display: flex; gap: 2rem; list-style: none;
+}
+
+.nav-links a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  font-size: 0.9rem; font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--gold); }
+
+.nav-cta {
+  background: var(--gold);
+  color: var(--navy) !important;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 700 !important;
+  transition: background 0.2s !important;
+}
+
+.nav-cta:hover { background: var(--gold-light) !important; color: var(--navy) !important; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--navy) 0%, #0f1c38 60%, #1a3a5c 100%);
+  display: flex; align-items: center;
+  padding: 100px 5% 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(232,160,32,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(26,122,74,0.08) 0%, transparent 50%);
+}
+
+.hero-grid {
+  position: absolute; inset: 0; opacity: 0.04;
+  background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.hero-content {
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+  position: relative; z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(232,160,32,0.15);
+  border: 1px solid rgba(232,160,32,0.3);
+  color: var(--gold);
+  padding: 6px 16px; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; margin-bottom: 24px;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--gold); border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 800; line-height: 1.1;
+  color: var(--white); margin-bottom: 20px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.hero h1 span { color: var(--gold); }
+
+.hero p {
+  font-size: 1.1rem; line-height: 1.7;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 36px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-btns {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy);
+  padding: 14px 32px; border-radius: 8px;
+  font-weight: 700; font-size: 1rem;
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 8px;
+  transition: all 0.2s; border: none; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(232,160,32,0.3);
+}
+
+.btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,160,32,0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  padding: 14px 32px; border-radius: 8px;
+  font-weight: 600; font-size: 1rem;
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 8px;
+  transition: all 0.2s;
+  border: 1.5px solid rgba(255,255,255,0.25);
+}
+
+.btn-secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.hero-stats {
+  display: flex; gap: 32px; margin-top: 48px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+
+.stat { text-align: left; }
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--gold);
+}
+
+.stat-label {
+  font-size: 0.8rem; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Hero App Mockup */
+.hero-visual {
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.app-mockup {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.mockup-titlebar {
+  background: var(--navy);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+
+.mockup-title {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.75rem; margin-left: 8px;
+}
+
+.mockup-header {
+  background: #1f497d;
+  padding: 14px 20px;
+  color: white;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 0.95rem;
+}
+
+.mockup-body { padding: 20px; }
+
+.mockup-step {
+  margin-bottom: 14px;
+}
+
+.mockup-step-label {
+  font-size: 0.7rem; font-weight: 700;
+  color: #1f497d; text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 4px;
+}
+
+.mockup-select {
+  background: #f3f4f6; border-radius: 6px;
+  padding: 8px 12px; font-size: 0.8rem;
+  color: #374151; display: flex;
+  justify-content: space-between; align-items: center;
+}
+
+.mockup-btn {
+  background: #1f497d; color: white;
+  padding: 8px 16px; border-radius: 6px;
+  font-size: 0.8rem; font-weight: 600;
+  display: inline-block;
+}
+
+.mockup-success {
+  background: #f0fdf4; border: 1px solid #86efac;
+  border-radius: 6px; padding: 10px 14px;
+  font-size: 0.8rem; color: #15803d; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.mockup-xml-btn {
+  background: #166534; color: white;
+  padding: 10px 20px; border-radius: 6px;
+  font-size: 0.85rem; font-weight: 700;
+  text-align: center; margin-top: 12px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── BANKS STRIP ── */
+.banks-strip {
+  background: var(--navy);
+  padding: 20px 5%;
+  display: flex; align-items: center;
+  gap: 0; overflow: hidden;
+  border-top: 1px solid rgba(232,160,32,0.2);
+  border-bottom: 1px solid rgba(232,160,32,0.2);
+}
+
+.banks-label {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 1px; white-space: nowrap;
+  margin-right: 32px; font-weight: 600;
+}
+
+.banks-scroll {
+  display: flex; gap: 32px;
+  animation: scrollBanks 20s linear infinite;
+  white-space: nowrap;
+}
+
+.bank-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  padding: 6px 16px; border-radius: 100px;
+  font-size: 0.82rem; font-weight: 500;
+  white-space: nowrap;
+}
+
+@keyframes scrollBanks {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── HOW IT WORKS ── */
+.section {
+  padding: 80px 5%;
+  max-width: 1200px; margin: 0 auto;
+}
+
+.section-tag {
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--gold); text-transform: uppercase;
+  letter-spacing: 1.5px; margin-bottom: 12px;
+}
+
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 800; line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.section-sub {
+  font-size: 1.05rem; color: var(--gray);
+  line-height: 1.7; max-width: 560px;
+  margin-bottom: 60px;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.step-card {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: all 0.3s;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--gold);
+}
+
+.step-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 3rem; font-weight: 800;
+  color: rgba(232,160,32,0.15);
+  line-height: 1; margin-bottom: 16px;
+}
+
+.step-icon {
+  font-size: 2rem; margin-bottom: 12px;
+}
+
+.step-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.step-card p {
+  font-size: 0.88rem; color: var(--gray);
+  line-height: 1.6;
+}
+
+/* ── BANKS SECTION ── */
+.banks-section {
+  background: var(--navy);
+  padding: 80px 5%;
+}
+
+.banks-inner {
+  max-width: 1200px; margin: 0 auto;
+}
+
+.banks-section .section-title { color: white; }
+.banks-section .section-tag { color: var(--gold); }
+.banks-section .section-sub { color: rgba(255,255,255,0.6); }
+
+.banks-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.bank-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px;
+  transition: all 0.2s;
+}
+
+.bank-card:hover {
+  background: rgba(232,160,32,0.1);
+  border-color: rgba(232,160,32,0.3);
+  transform: translateX(4px);
+}
+
+.bank-icon {
+  width: 42px; height: 42px;
+  background: rgba(232,160,32,0.15);
+  border-radius: 10px;
+  display: flex; align-items: center;
+  justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
+}
+
+.bank-name {
+  font-weight: 600; color: white;
+  font-size: 0.95rem;
+}
+
+.bank-status {
+  font-size: 0.72rem; color: #4ade80;
+  font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coming-soon .bank-status { color: rgba(255,255,255,0.3); }
+.coming-soon .bank-name { color: rgba(255,255,255,0.4); }
+.coming-soon .bank-icon { background: rgba(255,255,255,0.05); }
+
+/* ── PRICING ── */
+.pricing-section {
+  padding: 80px 5%;
+  background: var(--cream);
+}
+
+.pricing-inner {
+  max-width: 1100px; margin: 0 auto;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.price-card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: all 0.3s;
+  position: relative;
+}
+
+.price-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+
+.price-card.popular {
+  border-color: var(--gold);
+  background: var(--navy);
+  color: white;
+  transform: scale(1.04);
+}
+
+.price-card.popular:hover {
+  transform: scale(1.04) translateY(-6px);
+}
+
+.popular-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: var(--navy);
+  font-size: 0.7rem; font-weight: 800;
+  padding: 4px 16px; border-radius: 100px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.plan-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.85rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--gray); margin-bottom: 16px;
+}
+
+.popular .plan-name { color: rgba(255,255,255,0.5); }
+
+.plan-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.8rem; font-weight: 800;
+  line-height: 1; margin-bottom: 4px;
+  color: var(--navy);
+}
+
+.popular .plan-price { color: var(--gold); }
+
+.plan-price span {
+  font-size: 1rem; font-weight: 400;
+  color: var(--gray); font-family: 'DM Sans', sans-serif;
+}
+
+.popular .plan-price span { color: rgba(255,255,255,0.5); }
+
+.plan-pages {
+  font-size: 0.9rem; color: var(--gray);
+  margin-bottom: 8px;
+}
+
+.popular .plan-pages { color: rgba(255,255,255,0.7); }
+
+.plan-rate {
+  font-size: 0.78rem; color: var(--green);
+  font-weight: 700; margin-bottom: 24px;
+  background: rgba(26,122,74,0.08);
+  padding: 4px 10px; border-radius: 100px;
+  display: inline-block;
+}
+
+.popular .plan-rate {
+  background: rgba(232,160,32,0.15);
+  color: var(--gold-light);
+}
+
+.plan-validity {
+  font-size: 0.82rem; color: var(--gray);
+  margin-bottom: 24px; display: flex;
+  align-items: center; gap: 6px;
+}
+
+.popular .plan-validity { color: rgba(255,255,255,0.6); }
+
+.plan-features {
+  list-style: none; margin-bottom: 28px;
+}
+
+.plan-features li {
+  font-size: 0.85rem; color: var(--gray);
+  padding: 6px 0; display: flex;
+  align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.popular .plan-features li {
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.plan-features li::before {
+  content: '✓';
+  color: var(--green); font-weight: 700;
+  flex-shrink: 0;
+}
+
+.popular .plan-features li::before { color: var(--gold); }
+
+.plan-btn {
+  width: 100%; padding: 12px;
+  border-radius: 10px; border: none;
+  font-weight: 700; font-size: 0.95rem;
+  cursor: pointer; transition: all 0.2s;
+  background: var(--navy); color: white;
+}
+
+.plan-btn:hover {
+  background: var(--navy-light);
+  transform: translateY(-1px);
+}
+
+.popular .plan-btn {
+  background: var(--gold); color: var(--navy);
+}
+
+.popular .plan-btn:hover { background: var(--gold-light); }
+
+.trial-note {
+  text-align: center; margin-top: 32px;
+  font-size: 0.9rem; color: var(--gray);
+}
+
+.trial-note strong { color: var(--navy); }
+
+/* ── FEATURES ── */
+.features-section {
+  padding: 80px 5%;
+  background: white;
+}
+
+.features-inner { max-width: 1200px; margin: 0 auto; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+.feature-card {
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+
+.feature-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-3px);
+}
+
+.feature-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  border-radius: 14px;
+  display: flex; align-items: center;
+  justify-content: center;
+  font-size: 1.5rem; margin-bottom: 18px;
+}
+
+.feature-card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 0.88rem; color: var(--gray);
+  line-height: 1.65;
+}
+
+/* ── REQUEST BANK CTA ── */
+.request-section {
+  background: linear-gradient(135deg, var(--navy), #0f1c38);
+  padding: 80px 5%;
+  text-align: center;
+}
+
+.request-section h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800; color: white;
+  margin-bottom: 16px;
+}
+
+.request-section p {
+  color: rgba(255,255,255,0.65);
+  font-size: 1.05rem; margin-bottom: 36px;
+  max-width: 500px; margin-left: auto; margin-right: auto;
+  line-height: 1.7;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: #0d1628;
+  padding: 48px 5% 32px;
+}
+
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  gap: 48px; margin-bottom: 40px;
+}
+
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem; font-weight: 800;
+  color: white; margin-bottom: 12px;
+}
+
+.footer-logo span { color: var(--gold); }
+
+.footer-desc {
+  font-size: 0.88rem; color: rgba(255,255,255,0.4);
+  line-height: 1.7; max-width: 320px;
+}
+
+.footer-heading {
+  font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: rgba(255,255,255,0.3); margin-bottom: 16px;
+}
+
+.footer-links { list-style: none; }
+
+.footer-links li { margin-bottom: 10px; }
+
+.footer-links a {
+  color: rgba(255,255,255,0.55);
+  text-decoration: none; font-size: 0.88rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--gold); }
+
+.footer-bottom {
+  max-width: 1200px; margin: 0 auto;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 24px;
+  display: flex; justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copy {
+  font-size: 0.82rem; color: rgba(255,255,255,0.25);
+}
+
+.footer-made {
+  font-size: 0.82rem; color: rgba(255,255,255,0.25);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .hero-content { grid-template-columns: 1fr; }
+  .hero-visual { display: none; }
+  .steps-grid { grid-template-columns: repeat(2,1fr); }
+  .banks-grid { grid-template-columns: repeat(2,1fr); }
+  .pricing-grid { grid-template-columns: repeat(2,1fr); }
+  .features-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 580px) {
+  .steps-grid { grid-template-columns: 1fr; }
+  .banks-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .hero-btns { flex-direction: column; }
+  .price-card.popular { transform: scale(1); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Bank<span>To</span>TallyPrime</div>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#banks">Banks</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#download" class="nav-cta">Download Free</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-badge">✦ India's Smartest Bank Statement Converter</div>
+      <h1>Convert Bank Statements to <span>Tally Prime</span> in Seconds</h1>
+      <p>Stop wasting hours manually entering transactions. Upload your bank PDF, get a ready-to-import Tally XML instantly. Works with all major Indian banks.</p>
+      <div class="hero-btns">
+        <a href="#download" class="btn-primary">⬇ Download Free — 99 Pages Trial</a>
+        <a href="#how-it-works" class="btn-secondary">See How It Works →</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num">9+</div>
+          <div class="stat-label">Banks Supported</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">99</div>
+          <div class="stat-label">Free Trial Pages</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">₹1</div>
+          <div class="stat-label">Per Page</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="app-mockup">
+        <div class="mockup-titlebar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="mockup-title">BankToTallyPrime — Statement Converter</span>
+        </div>
+        <div class="mockup-header">BankToTallyPrime — Bank Statement Converter</div>
+        <div class="mockup-body">
+          <div class="mockup-step">
+            <div class="mockup-step-label">Step 1 — Select Bank</div>
+            <div class="mockup-select">Kotak Mahindra Bank <span>▼</span></div>
+          </div>
+          <div class="mockup-step">
+            <div class="mockup-step-label">Step 2 — Upload PDF</div>
+            <span class="mockup-btn">Browse & Upload PDF</span>
+          </div>
+          <div class="mockup-step">
+            <div class="mockup-step-label">Step 3 — Ledger Name</div>
+            <div class="mockup-select">Kotak Current Account</div>
+          </div>
+          <div class="mockup-success">
+            ✅ 602 transactions found — Ready to export!
+          </div>
+          <div class="mockup-xml-btn">Generate Tally XML</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BANKS STRIP -->
+<div class="banks-strip">
+  <div class="banks-label">Supported Banks</div>
+  <div class="banks-scroll">
+    <span class="bank-chip">🏦 SBI</span>
+    <span class="bank-chip">🏦 HDFC Bank</span>
+    <span class="bank-chip">🏦 ICICI Bank</span>
+    <span class="bank-chip">🏦 Axis Bank</span>
+    <span class="bank-chip">🏦 Kotak Mahindra</span>
+    <span class="bank-chip">🏦 Canara Bank</span>
+    <span class="bank-chip">🏦 Union Bank</span>
+    <span class="bank-chip">🏦 Yes Bank</span>
+    <span class="bank-chip">🏦 IDFC First Bank</span>
+    <span class="bank-chip">🏦 SBI</span>
+    <span class="bank-chip">🏦 HDFC Bank</span>
+    <span class="bank-chip">🏦 ICICI Bank</span>
+    <span class="bank-chip">🏦 Axis Bank</span>
+    <span class="bank-chip">🏦 Kotak Mahindra</span>
+    <span class="bank-chip">🏦 Canara Bank</span>
+    <span class="bank-chip">🏦 Union Bank</span>
+    <span class="bank-chip">🏦 Yes Bank</span>
+    <span class="bank-chip">🏦 IDFC First Bank</span>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" style="padding: 80px 5%; background: white;">
+  <div style="max-width:1200px; margin:0 auto;">
+    <div class="section-tag">Simple 4-Step Process</div>
+    <h2 class="section-title">From Bank PDF to Tally XML<br>in Under 60 Seconds</h2>
+    <p class="section-sub">No technical knowledge needed. No manual data entry. Just upload and download.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">🏦</div>
+        <h3>Select Your Bank</h3>
+        <p>Choose from 9+ supported Indian banks. More banks added regularly based on user requests.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">📄</div>
+        <h3>Upload Bank PDF</h3>
+        <p>Upload your bank-generated PDF statement. Works with official bank statements only — not scanned images.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">⚡</div>
+        <h3>Auto Detection</h3>
+        <p>The app instantly reads all transactions, detects dates automatically, and shows you a full preview.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon">✅</div>
+        <h3>Download Tally XML</h3>
+        <p>Generate and download the XML file. Import directly into Tally Prime — all transactions ready instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BANKS -->
+<section id="banks" class="banks-section">
+  <div class="banks-inner">
+    <div class="section-tag">Bank Coverage</div>
+    <h2 class="section-title">9 Banks Supported & Growing</h2>
+    <p class="section-sub" style="color:rgba(255,255,255,0.55);">Don't see your bank? Request it inside the app — we'll add it in the next update.</p>
+    <div class="banks-grid">
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">State Bank of India</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">HDFC Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">ICICI Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Axis Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Kotak Mahindra Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Canara Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Union Bank of India</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Yes Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">IDFC First Bank</div>
+          <div class="bank-status">✓ Supported</div>
+        </div>
+      </div>
+      <div class="bank-card coming-soon">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Punjab National Bank</div>
+          <div class="bank-status">Coming Soon</div>
+        </div>
+      </div>
+      <div class="bank-card coming-soon">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">Bank of Baroda</div>
+          <div class="bank-status">Coming Soon</div>
+        </div>
+      </div>
+      <div class="bank-card coming-soon">
+        <div class="bank-icon">🏦</div>
+        <div>
+          <div class="bank-name">IndusInd Bank</div>
+          <div class="bank-status">Coming Soon</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="pricing-section">
+  <div class="pricing-inner">
+    <div style="text-align:center; margin-bottom:60px;">
+      <div class="section-tag" style="text-align:center;">Simple Pricing</div>
+      <h2 class="section-title" style="text-align:center;">Pay Only for What You Use</h2>
+      <p style="color:var(--gray); font-size:1.05rem; max-width:500px; margin:0 auto; line-height:1.7;">
+        Start free with 99 pages. Buy more only when you need them. No subscriptions, no hidden fees.
+      </p>
+    </div>
+    <div class="pricing-grid">
+
+      <!-- Free Trial -->
+      <div class="price-card">
+        <div class="plan-name">Free Trial</div>
+        <div class="plan-price">₹0</div>
+        <div class="plan-pages">99 Pages Included</div>
+        <div class="plan-rate">₹0 per page</div>
+        <div class="plan-validity">⏱ Valid for 7 days</div>
+        <ul class="plan-features">
+          <li>All 9+ banks supported</li>
+          <li>Full Tally XML export</li>
+          <li>Transaction preview</li>
+          <li>No credit card needed</li>
+        </ul>
+        <a href="#download"><button class="plan-btn">Download Free</button></a>
+      </div>
+
+      <!-- Pay Per Page -->
+      <div class="price-card">
+        <div class="plan-name">Pay Per Page</div>
+        <div class="plan-price">₹1 <span>/ page</span></div>
+        <div class="plan-pages">Buy as many as you need</div>
+        <div class="plan-rate">₹1.00 per page</div>
+        <div class="plan-validity">📅 Never expires</div>
+        <ul class="plan-features">
+          <li>No minimum purchase</li>
+          <li>All banks supported</li>
+          <li>Full Tally XML export</li>
+          <li>Pages never expire</li>
+        </ul>
+        <button class="plan-btn">Buy Pages</button>
+      </div>
+
+      <!-- Popular -->
+      <div class="price-card popular">
+        <div class="popular-badge">⭐ Best Value</div>
+        <div class="plan-name">Saver Pack</div>
+        <div class="plan-price">₹1000</div>
+        <div class="plan-pages">3,000 Pages</div>
+        <div class="plan-rate">₹0.33 per page — Save 67%</div>
+        <div class="plan-validity">📅 Never expires</div>
+        <ul class="plan-features">
+          <li>3,000 pages included</li>
+          <li>All banks supported</li>
+          <li>Full Tally XML export</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="plan-btn">Buy Saver Pack</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card">
+        <div class="plan-name">Pro Pack</div>
+        <div class="plan-price">₹2000</div>
+        <div class="plan-pages">6,000 Pages</div>
+        <div class="plan-rate">₹0.33 per page — Save 67%</div>
+        <div class="plan-validity">📅 Never expires</div>
+        <ul class="plan-features">
+          <li>6,000 pages included</li>
+          <li>All banks supported</li>
+          <li>Full Tally XML export</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="plan-btn">Buy Pro Pack</button>
+      </div>
+    </div>
+    <p class="trial-note">
+      🎉 <strong>Start completely free</strong> — 99 pages trial, no credit card required. Pages are deducted per statement page processed.
+    </p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="features-section">
+  <div class="features-inner">
+    <div class="section-tag">Why Choose Us</div>
+    <h2 class="section-title">Built for Indian Accountants</h2>
+    <p class="section-sub">Every feature designed to save you time and eliminate manual data entry errors.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Lightning Fast Processing</h3>
+        <p>Process hundreds of transactions in seconds. What used to take hours now takes under a minute.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>100% Accurate</h3>
+        <p>Reads directly from bank PDFs — no OCR, no errors. Every transaction amount and date is exact.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Completely Offline</h3>
+        <p>Your financial data never leaves your computer. No cloud upload, no data sharing. Total privacy.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Transaction Preview</h3>
+        <p>Review all transactions before export. Verify everything is correct before importing to Tally.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏦</div>
+        <h3>Multi-Format Support</h3>
+        <p>Each bank has multiple statement formats. Our app handles all of them automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Regular Updates</h3>
+        <p>New banks added regularly. Request your bank inside the app and we'll add it in the next update.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REQUEST BANK CTA -->
+<section class="request-section">
+  <h2>Your Bank Not Listed?</h2>
+  <p>Request it directly from inside the app. Upload your bank statement PDF and our team will add support in the next update — usually within a week.</p>
+  <a href="#download" class="btn-primary">Download App & Request Your Bank</a>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download" style="padding:80px 5%; background:var(--cream); text-align:center;">
+  <div style="max-width:600px; margin:0 auto;">
+    <div class="section-tag" style="text-align:center;">Free Download</div>
+    <h2 class="section-title" style="text-align:center;">Start Converting Today</h2>
+    <p style="color:var(--gray); margin-bottom:40px; font-size:1.05rem; line-height:1.7;">
+      Download BankToTallyPrime for Windows. Free trial includes 99 pages — no credit card required.
+    </p>
+    <a href="#" class="btn-primary" style="font-size:1.1rem; padding:16px 40px; margin-bottom:16px; display:inline-flex;">
+      ⬇ Download BankToTallyPrime for Windows
+    </a>
+    <div style="color:var(--gray); font-size:0.85rem; margin-top:16px;">
+      Windows 10/11 • Free 99-page trial • No subscription
+    </div>
+    <div style="margin-top:32px; padding:20px; background:white; border-radius:12px; border:1px solid var(--border); font-size:0.85rem; color:var(--gray); line-height:1.7;">
+      <strong style="color:var(--navy);">System Requirements:</strong> Windows 10 or 11 (64-bit) • .NET 8.0 Runtime (included in installer) • 50MB free disk space
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">Bank<span>To</span>TallyPrime</div>
+      <p class="footer-desc">The fastest way to convert Indian bank statements to Tally Prime XML. Built for accountants, bookkeepers and businesses across India.</p>
+    </div>
+    <div>
+      <div class="footer-heading">Product</div>
+      <ul class="footer-links">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#banks">Supported Banks</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#download">Download</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-heading">Support</div>
+      <ul class="footer-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#">Request New Bank</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 BankToTallyPrime. All rights reserved.</div>
+    <div class="footer-made">Made in India 🇮🇳 for Indian Accountants</div>
+  </div>
+</footer>
+
+</body>
+</html>
